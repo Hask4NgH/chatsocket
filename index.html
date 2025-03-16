@@ -326,21 +326,21 @@
             flex-grow: 1;
             margin-bottom: 0;
         }
-.crown-icon {
+	.crown-icon {
     display: inline-block;
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     margin-right: 4px;
-    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjZmZkNzAwIiBkPSJNMzM2IDM1MmgtMTYwYy04LjgzNyAwLTE2LTcuMTYzLTE2LTE2di02NGgxOTJ2NjRjMCA4LjgzNy03LjE2MyAxNi0xNiAxNnptMTYwLTIwOGMwIDI2LjUxLTIxLjQ5IDQ4LTQ4IDQ4aC0yNS45OTlsMTIuMDEyIDY3LjU3NkM0MzUuOTc4IDI3NC4xMjUgNDI4LjI1NCAyODggNDE2IDI4OEg5NmMtMTIuMjU0IDAtMTkuOTc4LTEzLjg3NS0xOC4wMTMtMjUuNDI0TDg5Ljk5OSAxOTJINjRjLTI2LjUxIDAtNDgtMjEuNDktNDgtNDhzMjEuNDktNDggNDgtNDhoMzJsNjQtNjRoMjU2bDY0IDY0aDMyYzI2LjUxIDAgNDggMjEuNDkgNDggNDh6Ij48L3BhdGg+PC9zdmc+');
+    background-image: url('coroa.png');
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
     vertical-align: middle;
 }
 
-.owner-name {
-    color: #000000;
-    font-weight: bold;
+	.owner-name {
+    	color: #000000; /* Mudando para dourado para melhor visibilidade */
+    	font-weight: bold;
 }
     </style>
 </head>
@@ -402,7 +402,7 @@
 
     <div id="chatContainer" class="chat-container" style="display: none;">
         <div class="chat-header">
-            <h2>Chat Hask4NgH</h2>
+            <h2>ChatWebDuo</h2>
             <div id="status">Conectando...</div>
             <div class="user-profile">
                 <div class="profile-pic" id="profilePic"></div>
@@ -420,649 +420,453 @@
     </div>
 
     <script>
-const SUPABASE_URL = 'https://acjphbrsvlcmygnpswtf.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjanBoYnJzdmxjbXlnbnBzd3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxMDU2MDksImV4cCI6MjA1NzY4MTYwOX0.CSYaJXRdtbYR-Cb8DS59q7kMwm7tWVz06oRtxMq63B8';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SUPABASE_URL = 'https://acjphbrsvlcmygnpswtf.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjanBoYnJzdmxjbXlnbnBzd3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxMDU2MDksImV4cCI6MjA1NzY4MTYwOX0.CSYaJXRdtbYR-Cb8DS59q7kMwm7tWVz06oRtxMq63B8';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let currentUser = null;
-const activeDirectMessages = new Map();
+        let currentUser = null;
+        const activeDirectMessages = new Map();
 
-// Verificar se já existe uma sessão
-async function checkSession() {
-    const session = localStorage.getItem('chatSession');
-    if (session) {
-        showLoading();
-        try {
-            const { data, error } = await supabaseClient
-                .from('sessions')
-                .select('*, users(*)')
-                .eq('token', session)
-                .single();
+        async function checkSession() {
+            const session = localStorage.getItem('chatSession');
+            if (session) {
+                showLoading();
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('sessions')
+                        .select('*, users(*)')
+                        .eq('token', session)
+                        .single();
 
-            if (data && new Date(data.expires_at) > new Date()) {
-                currentUser = data.users;
-                await initializeChat();
+                    if (data && new Date(data.expires_at) > new Date()) {
+                        currentUser = data.users;
+                        await initializeChat();
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Erro ao verificar sessão:', error);
+                }
+                localStorage.removeItem('chatSession');
+            }
+            showRegisterModal();
+        }
+
+        async function register() {
+            const email = document.getElementById('regEmail').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            // Validações
+            if (!email || !username || !password || !confirmPassword) {
+                document.getElementById('regError').textContent = 'Todos os campos são obrigatórios';
                 return;
             }
-        } catch (error) {
-            console.error('Erro ao verificar sessão:', error);
-        }
-        localStorage.removeItem('chatSession');
-    }
-    showRegisterModal();
-}
 
-async function register() {
-    const email = document.getElementById('regEmail').value.trim();
-    const username = document.getElementById('regUsername').value.trim();
-    const password = document.getElementById('regPassword').value;
-    const confirmPassword = document.getElementById('regConfirmPassword').value;
-
-    // Validações
-    if (!email || !username || !password || !confirmPassword) {
-        document.getElementById('regError').textContent = 'Todos os campos são obrigatórios';
-        return;
-    }
-
-    if (username.length < 3) {
-        document.getElementById('regError').textContent = 'Nome de usuário deve ter pelo menos 3 caracteres';
-        return;
-    }
-
-    if (password.length < 6) {
-        document.getElementById('regError').textContent = 'Senha deve ter pelo menos 6 caracteres';
-        return;
-    }
-
-    if (password !== confirmPassword) {
-        document.getElementById('regError').textContent = 'As senhas não coincidem';
-        return;
-    }
-
-    showLoading();
-    try {
-        // Verificar se o email ou username já existem
-        const { data: existingUser } = await supabaseClient
-            .from('users')
-            .select('email, username')
-            .or(`email.eq.${email},username.eq.${username}`)
-            .single();
-
-        if (existingUser) {
-            throw new Error('Email ou nome de usuário já está em uso');
-        }
-
-        // Obter o próximo número de usuário
-        const { data: userCount } = await supabaseClient
-            .from('users')
-            .select('count');
-        
-        const userNumber = (userCount[0]?.count || 0) + 1;
-
-        // Criar novo usuário
-        const { data, error } = await supabaseClient
-            .from('users')
-            .insert([{
-                email,
-                username,
-                password: await hashPassword(password),
-                user_number: userNumber
-            }])
-            .single();
-
-        if (error) throw error;
-
-        showLoginModal();
-    } catch (error) {
-        document.getElementById('regError').textContent = 
-            error.message || 'Erro ao registrar usuário';
-        hideLoading();
-    }
-}
-
-async function login() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-
-    // Validações
-    if (!email || !password) {
-        document.getElementById('loginError').textContent = 'Email e senha são obrigatórios';
-        return;
-    }
-
-    showLoading();
-    try {
-        const { data: user, error } = await supabaseClient
-            .from('users')
-            .select('*')
-            .eq('email', email)
-            .single();
-
-        if (error || !user || !await verifyPassword(password, user.password)) {
-            throw new Error('Email ou senha inválidos');
-        }
-
-        // Atualizar último login
-        await supabaseClient
-            .from('users')
-            .update({ last_login: new Date().toISOString() })
-            .eq('id', user.id);
-
-        // Criar nova sessão
-        const token = generateToken();
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7); // Expira em 7 dias
-
-        await supabaseClient
-            .from('sessions')
-            .insert([{
-                user_id: user.id,
-                token,
-                expires_at: expiresAt.toISOString()
-            }]);
-
-        localStorage.setItem('chatSession', token);
-        currentUser = user;
-        await initializeChat();
-    } catch (error) {
-        document.getElementById('loginError').textContent = 
-            error.message || 'Erro ao fazer login';
-        hideLoading();
-    }
-}
-
-async function initializeChat() {
-    document.getElementById('loginModal').style.display = 'none';
-    document.getElementById('registerModal').style.display = 'none';
-    document.getElementById('chatContainer').style.display = 'block';
-    hideLoading();
-
-    // Configurar perfil do usuário
-    const profilePic = document.getElementById('profilePic');
-    const profileTooltip = document.getElementById('profileTooltip');
-    
-    profilePic.textContent = currentUser.username.substring(0, 2).toUpperCase();
-    profileTooltip.textContent = `${currentUser.username}#${currentUser.user_number}`;
-
-    // Iniciar canal de chat
-    const channel = supabaseClient.channel('online-users', {
-        config: {
-            presence: {
-                key: currentUser.username,
-            },
-        },
-    });
-
-    channel
-        .on('presence', { event: 'sync' }, () => {
-            const users = channel.presenceState();
-            updateOnlineUsers(users);
-        })
-        .on('broadcast', { event: 'message' }, ({ payload }) => {
-            displayMessage(payload);
-        })
-        .subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-                try {
-                    await channel.track({ 
-                        username: currentUser.username,
-                        user_number: currentUser.user_number
-                    });
-                    document.getElementById('status').textContent = 'Conectado';
-                    document.getElementById('status').style.color = 'var(--success-color)';
-                } catch (error) {
-                    console.error('Erro ao registrar presença:', error);
-                }
+            if (username.length < 3) {
+                document.getElementById('regError').textContent = 'Nome de usuário deve ter pelo menos 3 caracteres';
+                return;
             }
-        });
 
-    // Configurar envio de mensagem com Enter
-    document.getElementById('messageInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
+            if (password.length < 6) {
+                document.getElementById('regError').textContent = 'Senha deve ter pelo menos 6 caracteres';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                document.getElementById('regError').textContent = 'As senhas não coincidem';
+                return;
+            }
+
+            showLoading();
+            try {
+                const { data: existingUser } = await supabaseClient
+                    .from('users')
+                    .select('email, username')
+                    .or(`email.eq.${email},username.eq.${username}`)
+                    .single();
+
+                if (existingUser) {
+                    throw new Error('Email ou nome de usuário já está em uso');
+                }
+
+                const { data: userCount } = await supabaseClient
+                    .from('users')
+                    .select('count');
+                
+                const userNumber = (userCount[0]?.count || 0) + 1;
+
+                const { data, error } = await supabaseClient
+                    .from('users')
+                    .insert([{
+                        email,
+                        username,
+                        password: await hashPassword(password),
+                        user_number: userNumber
+                    }])
+                    .single();
+
+                if (error) throw error;
+
+                showLoginModal();
+            } catch (error) {
+                document.getElementById('regError').textContent = error.message || 'Erro ao registrar usuário';
+                hideLoading();
+            }
         }
-    });
 
-    // Configurar listener de DMs e carregar último chat
-    setupDMListener();
-    await loadLastOpenChat();
-}
+        async function initializeChat() {
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('registerModal').style.display = 'none';
+            document.getElementById('chatContainer').style.display = 'block';
+            hideLoading();
 
-async function sendMessage() {
-    const messageInput = document.getElementById('messageInput');
-    const text = messageInput.value.trim();
-    
-    if (text && currentUser) {
-        try {
-            const message = {
-                user: currentUser.username,
-                text: text,
-                timestamp: new Date().toISOString(),
-                user_number: currentUser.user_number
-            };
+            const profilePic = document.getElementById('profilePic');
+            const profileTooltip = document.getElementById('profileTooltip');
+            
+            profilePic.textContent = currentUser.username.substring(0, 2).toUpperCase();
+            profileTooltip.textContent = `${currentUser.username}#${currentUser.user_number}`;
 
-            const channel = supabaseClient.channel('online-users');
-            await channel.send({
-                type: 'broadcast',
-                event: 'message',
-                payload: message,
+            const channel = supabaseClient.channel('online-users', {
+                config: {
+                    presence: {
+                        key: currentUser.username,
+                    },
+                },
             });
 
-            messageInput.value = '';
-        } catch (error) {
-            console.error('Erro ao enviar mensagem:', error);
-            alert('Erro ao enviar mensagem');
-        }
-    }
-}
-
-function displayMessage(message) {
-    const chatMessages = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${message.user === currentUser.username ? 'sent' : 'received'}`;
-    
-    const username = document.createElement('strong');
-    
-    // Verificar se é o dono (#1)
-    if (message.user_number === 1) {
-        username.className = 'owner-name';
-        username.innerHTML = `<i class="crown-icon"></i>${message.user}#${message.user_number}`;
-    } else {
-        username.textContent = `${message.user}#${message.user_number}`;
-    }
-    
-    username.style.cursor = 'pointer';
-    
-    // Adicionar eventos de hover
-    username.addEventListener('mouseover', (e) => {
-        if (message.user !== currentUser.username) {
-            createUserHoverCard(message.user, message.user_number, e);
-        }
-    });
-    
-    const time = new Date(message.timestamp).toLocaleTimeString();
-    messageDiv.appendChild(username);
-    messageDiv.appendChild(document.createElement('br'));
-    messageDiv.appendChild(document.createTextNode(message.text));
-    messageDiv.appendChild(document.createElement('br'));
-    
-    const timestampDiv = document.createElement('div');
-    timestampDiv.className = 'timestamp';
-    timestampDiv.textContent = time;
-    messageDiv.appendChild(timestampDiv);
-    
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-// Modificar a função updateOnlineUsers
-function updateOnlineUsers(users) {
-    const userArray = Object.values(users).map(presence => {
-        // Verifica se presence é um array e pega o primeiro item se for
-        const userData = Array.isArray(presence) ? presence[0] : presence;
-        if (userData && userData.username && userData.user_number) {
-            return `${userData.username}#${userData.user_number}`;
-        }
-        return null;
-    }).filter(user => user !== null); // Remove valores nulos
-
-    const count = userArray.length;
-    document.getElementById('onlineUsers').textContent = 
-        `Usuários online (${count}): ${userArray.join(', ')}`;
-}
-
-// Funções para DMs
-function createUserHoverCard(username, userNumber, event) {
-    removeUserHoverCard();
-
-    const card = document.createElement('div');
-    card.className = 'user-hover-card';
-    card.innerHTML = `
-        <div class="profile-header">
-            <div class="profile-pic-small">${username.substring(0, 2).toUpperCase()}</div>
-            <div class="user-info">
-                <strong>${username}</strong>
-                <div>#${userNumber}</div>
-            </div>
-        </div>
-        <button class="dm-button" onclick="openDirectMessage('${username}', ${userNumber})">Mensagem Direta</button>
-    `;
-
-    // Posicionar o card próximo ao nome do usuário
-    card.style.left = `${event.pageX}px`;
-    card.style.top = `${event.pageY}px`;
-
-    document.body.appendChild(card);
-    card.style.display = 'block';
-}
-
-function removeUserHoverCard() {
-    const existingCard = document.querySelector('.user-hover-card');
-    if (existingCard) {
-        existingCard.remove();
-    }
-}
-
-// Função para salvar o último chat aberto
-function saveLastOpenChat(username, userNumber) {
-    localStorage.setItem('lastOpenChat', JSON.stringify({ username, userNumber }));
-}
-
-// Função para carregar o último chat aberto
-async function loadLastOpenChat() {
-    const lastChat = localStorage.getItem('lastOpenChat');
-    if (lastChat) {
-        const { username, userNumber } = JSON.parse(lastChat);
-        await openDirectMessage(username, userNumber);
-    }
-}
-
-// Função para configurar o listener de mensagens DM
-function setupDMListener() {
-    supabaseClient
-        .channel('direct_messages')
-        .on(
-            'postgres_changes',
-            {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'direct_messages'
-            },
-            async (payload) => {
-                const msg = payload.new;
-                
-                if (msg.receiver_number === currentUser.user_number || 
-                    msg.sender_number === currentUser.user_number) {
-
-                    const otherUserNumber = msg.receiver_number === currentUser.user_number ? 
-                        msg.sender_number : msg.receiver_number;
-
-                    try {
-                        const { data: userData, error } = await supabaseClient
-                            .from('users')
-                            .select('username')
-                            .eq('user_number', otherUserNumber)
-                            .single();
-
-                        if (error) throw error;
-                        if (!userData) return;
-
-                        await openDirectMessage(userData.username, otherUserNumber, true);
-                    } catch (error) {
-                        console.error('Erro ao processar mensagem:', error);
+            channel
+                .on('presence', { event: 'sync' }, () => {
+                    const users = channel.presenceState();
+                    updateOnlineUsers(users);
+                })
+                .on('broadcast', { event: 'message' }, ({ payload }) => {
+                    displayMessage(payload);
+                })
+                .subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        try {
+                            await channel.track({ 
+                                username: currentUser.username,
+                                user_number: currentUser.user_number
+                            });
+                            document.getElementById('status').textContent = 'Conectado';
+                            document.getElementById('status').style.color = 'var(--success-color)';
+                        } catch (error) {
+                            console.error('Erro ao registrar presença:', error);
+                        }
                     }
+                });
+
+            document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            setupDMListener();
+            await loadLastOpenChat();
+        }
+
+        function setupDMListener() {
+            supabaseClient
+                .channel('direct_messages')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'direct_messages'
+                    },
+                    async (payload) => {
+                        const msg = payload.new;
+                        
+                        if (msg.receiver_number === currentUser.user_number || 
+                            msg.sender_number === currentUser.user_number) {
+
+                            const otherUserNumber = msg.receiver_number === currentUser.user_number ? 
+                                msg.sender_number : msg.receiver_number;
+
+                            try {
+                                const { data: userData, error } = await supabaseClient
+                                    .from('users')
+                                    .select('username')
+                                    .eq('user_number', otherUserNumber)
+                                    .single();
+
+                                if (error) throw error;
+                                if (!userData) return;
+
+                                await openDirectMessage(userData.username, otherUserNumber, true);
+                            } catch (error) {
+                                console.error('Erro ao processar mensagem:', error);
+                            }
+                        }
+                    }
+                )
+                .subscribe();
+        }
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const text = messageInput.value.trim();
+            
+            if (text && currentUser) {
+                try {
+                    const message = {
+                        user: currentUser.username,
+                        text: text,
+                        timestamp: new Date().toISOString(),
+                        user_number: currentUser.user_number
+                    };
+
+                    const channel = supabaseClient.channel('online-users');
+                    await channel.send({
+                        type: 'broadcast',
+                        event: 'message',
+                        payload: message,
+                    });
+
+                    messageInput.value = '';
+                } catch (error) {
+                    console.error('Erro ao enviar mensagem:', error);
+                    alert('Erro ao enviar mensagem');
                 }
             }
-        )
-        .subscribe();
-}
-
-function setupDMListener() {
-    supabaseClient
-        .channel('direct_messages')
-        .on(
-            'postgres_changes',
-            {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'direct_messages'
-            },
-            async (payload) => {
-                const msg = payload.new;
-                
-                if (msg.receiver_number === currentUser.user_number || 
-                    msg.sender_number === currentUser.user_number) {
-
-                    const otherUserNumber = msg.receiver_number === currentUser.user_number ? 
-                        msg.sender_number : msg.receiver_number;
-
-                    try {
-                        const { data: userData, error } = await supabaseClient
-                            .from('users')
-                            .select('username')
-                            .eq('user_number', otherUserNumber)
-                            .single();
-
-                        if (error) throw error;
-                        if (!userData) return;
-
-                        await openDirectMessage(userData.username, otherUserNumber, true);
-                    } catch (error) {
-                        console.error('Erro ao processar mensagem:', error);
-                    }
-                }
-            }
-        )
-        .subscribe();
-}
-
-function setupDMListener() {
-    supabaseClient
-        .channel('direct_messages')
-        .on(
-            'postgres_changes',
-            {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'direct_messages'
-            },
-            async (payload) => {
-                const msg = payload.new;
-                
-                if (msg.receiver_number === currentUser.user_number || 
-                    msg.sender_number === currentUser.user_number) {
-
-                    const otherUserNumber = msg.receiver_number === currentUser.user_number ? 
-                        msg.sender_number : msg.receiver_number;
-
-                    try {
-                        const { data: userData, error } = await supabaseClient
-                            .from('users')
-                            .select('username')
-                            .eq('user_number', otherUserNumber)
-                            .single();
-
-                        if (error) throw error;
-                        if (!userData) return;
-
-                        await openDirectMessage(userData.username, otherUserNumber, true);
-                    } catch (error) {
-                        console.error('Erro ao processar mensagem:', error);
-                    }
-                }
-            }
-        )
-        .subscribe();
-}
-
-async function openDirectMessage(username, userNumber, isAutoOpen = false) {
-    removeUserHoverCard();
-    
-    let dmWindow = activeDirectMessages.get(username);
-    
-    if (dmWindow) {
-        dmWindow.style.opacity = '1';
-        await loadDirectMessageHistory(username, userNumber);
-        document.getElementById(`dm-input-${username}`).focus();
-        return;
-    }
-
-    let container = document.querySelector('.dm-windows-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'dm-windows-container';
-        document.body.appendChild(container);
-    }
-
-    dmWindow = document.createElement('div');
-    dmWindow.className = 'dm-window';
-    dmWindow.dataset.userNumber = userNumber;
-    dmWindow.innerHTML = `
-        <div class="dm-window-header">
-            <div class="user-info">
-                <div class="profile-pic-small">${username.substring(0, 2).toUpperCase()}</div>
-                <strong>${userNumber === 1 ? '<i class="crown-icon"></i>' : ''}${username}#${userNumber}</strong>
-            </div>
-            <div class="dm-close" onclick="closeDirectMessage('${username}')">&times;</div>
-        </div>
-        <div class="dm-messages" id="dm-messages-${username}"></div>
-        <div class="dm-input">
-            <input type="text" placeholder="Digite sua mensagem..." id="dm-input-${username}"
-                   onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendDirectMessage('${username}', ${userNumber}); }">
-            <button onclick="sendDirectMessage('${username}', ${userNumber})">Enviar</button>
-        </div>
-    `;
-
-    container.appendChild(dmWindow);
-    activeDirectMessages.set(username, dmWindow);
-
-    await loadDirectMessageHistory(username, userNumber);
-    
-    if (!isAutoOpen) {
-        document.getElementById(`dm-input-${username}`).focus();
-    }
-    
-    saveLastOpenChat(username, userNumber);
-}
-
-function closeDirectMessage(username) {
-    const dmWindow = activeDirectMessages.get(username);
-    if (dmWindow) {
-        dmWindow.remove();
-        activeDirectMessages.delete(username);
-        // Remover o último chat salvo se for o que está sendo fechado
-        const lastChat = localStorage.getItem('lastOpenChat');
-        if (lastChat) {
-            const { username: lastUsername } = JSON.parse(lastChat);
-            if (lastUsername === username) {
-                localStorage.removeItem('lastOpenChat');
-            }
         }
-    }
-}
 
-async function loadDirectMessageHistory(username, userNumber) {
-    try {
-        const { data: messages, error } = await supabaseClient
-            .from('direct_messages')
-            .select('*')
-            .or(
-                `and(sender_number.eq.${currentUser.user_number},receiver_number.eq.${userNumber}),` +
-                `and(sender_number.eq.${userNumber},receiver_number.eq.${currentUser.user_number})`
-            )
-            .order('created_at', { ascending: true });
-
-        if (error) throw error;
-
-        const messagesContainer = document.getElementById(`dm-messages-${username}`);
-        if (!messagesContainer) return;
-
-        messagesContainer.innerHTML = '';
-        
-        messages.forEach(msg => {
+        function displayMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${msg.sender_number === currentUser.user_number ? 'sent' : 'received'}`;
-            messageDiv.innerHTML = `
-                ${msg.message}<br>
-                <div class="timestamp">${new Date(msg.created_at).toLocaleTimeString()}</div>
-            `;
-            messagesContainer.appendChild(messageDiv);
-        });
-
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    } catch (error) {
-        console.error('Erro ao carregar mensagens:', error);
-    }
-}
-
-async function sendDirectMessage(username, userNumber) {
-    const inputElement = document.getElementById(`dm-input-${username}`);
-    const message = inputElement.value.trim();
-
-    if (!message) return;
-
-    try {
-        const { error } = await supabaseClient
-            .from('direct_messages')
-            .insert([{
-                sender_number: currentUser.user_number,
-                receiver_number: userNumber,
-                message: message
-            }]);
-
-        if (error) throw error;
-
-        // Limpar input imediatamente
-        inputElement.value = '';
-
-        // Atualizar mensagens imediatamente
-        await loadDirectMessageHistory(username, userNumber);
-        
-        // Garantir que a janela está visível e focada
-        const dmWindow = activeDirectMessages.get(username);
-        if (dmWindow) {
-            dmWindow.style.opacity = '1';
-            inputElement.focus();
+            messageDiv.className = `message ${message.user === currentUser.username ? 'sent' : 'received'}`;
+            
+            const username = document.createElement('strong');
+            
+            if (message.user_number === 1) {
+                username.className = 'owner-name';
+                username.innerHTML = `<i class="crown-icon"></i>${message.user}#${message.user_number}`;
+            } else {
+                username.textContent = `${message.user}#${message.user_number}`;
+            }
+            
+            username.style.cursor = 'pointer';
+            
+            username.addEventListener('mouseover', (e) => {
+                if (message.user !== currentUser.username) {
+                    createUserHoverCard(message.user, message.user_number, e);
+                }
+            });
+            
+            const time = new Date(message.timestamp).toLocaleTimeString();
+            messageDiv.appendChild(username);
+            messageDiv.appendChild(document.createElement('br'));
+            messageDiv.appendChild(document.createTextNode(message.text));
+            messageDiv.appendChild(document.createElement('br'));
+            
+            const timestampDiv = document.createElement('div');
+            timestampDiv.className = 'timestamp';
+            timestampDiv.textContent = time;
+            messageDiv.appendChild(timestampDiv);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-    } catch (error) {
-        console.error('Erro ao enviar mensagem:', error);
-        alert('Erro ao enviar mensagem: ' + error.message);
-    }
-}
 
-// Funções auxiliares
-function showLoading() {
-    document.getElementById('loadingModal').style.display = 'flex';
-}
+        function updateOnlineUsers(users) {
+            const userArray = Object.values(users).map(presence => {
+                const userData = Array.isArray(presence) ? presence[0] : presence;
+                if (userData && userData.username && userData.user_number) {
+                    return `${userData.username}#${userData.user_number}`;
+                }
+                return null;
+            }).filter(user => user !== null);
 
-function hideLoading() {
-    document.getElementById('loadingModal').style.display = 'none';
-}
+            const count = userArray.length;
+            document.getElementById('onlineUsers').textContent = 
+                `Usuários online (${count}): ${userArray.join(', ')}`;
+        }
 
-function showLoginModal() {
-    document.getElementById('registerModal').style.display = 'none';
-    document.getElementById('loginModal').style.display = 'flex';
-    hideLoading();
-    document.getElementById('loginEmail').focus();
-}
+        async function openDirectMessage(username, userNumber, isAutoOpen = false) {
+            removeUserHoverCard();
+            
+            let dmWindow = activeDirectMessages.get(username);
+            
+            if (dmWindow) {
+                dmWindow.style.opacity = '1';
+                await loadDirectMessageHistory(username, userNumber);
+                document.getElementById(`dm-input-${username}`).focus();
+                return;
+            }
 
-function showRegisterModal() {
-    document.getElementById('loginModal').style.display = 'none';
-    document.getElementById('registerModal').style.display = 'flex';
-    hideLoading();
-    document.getElementById('regEmail').focus();
-}
+            let container = document.querySelector('.dm-windows-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'dm-windows-container';
+                document.body.appendChild(container);
+            }
 
-async function hashPassword(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hash))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-}
+            dmWindow = document.createElement('div');
+            dmWindow.className = 'dm-window';
+            dmWindow.dataset.userNumber = userNumber;
+            dmWindow.innerHTML = `
+                <div class="dm-window-header">
+                    <div class="user-info">
+                        <div class="profile-pic-small">${username.substring(0, 2).toUpperCase()}</div>
+                        <strong>${userNumber === 1 ? '<i class="crown-icon"></i>' : ''}${username}#${userNumber}</strong>
+                    </div>
+                    <div class="dm-close" onclick="closeDirectMessage('${username}')">&times;</div>
+                </div>
+                <div class="dm-messages" id="dm-messages-${username}"></div>
+                <div class="dm-input">
+                    <input type="text" placeholder="Digite sua mensagem..." id="dm-input-${username}"
+                           onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendDirectMessage('${username}', ${userNumber}); }">
+                    <button onclick="sendDirectMessage('${username}', ${userNumber})">Enviar</button>
+                </div>
+            `;
 
-async function verifyPassword(password, hash) {
-    return await hashPassword(password) === hash;
-}
+            container.appendChild(dmWindow);
+            activeDirectMessages.set(username, dmWindow);
 
-function generateToken() {
-    return Array.from(crypto.getRandomValues(new Uint8Array(32)))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-}
+            await loadDirectMessageHistory(username, userNumber);
+            
+            if (!isAutoOpen) {
+                document.getElementById(`dm-input-${username}`).focus();
+            }
+            
+            saveLastOpenChat(username, userNumber);
+        }
 
-// Iniciar aplicação
-checkSession();
+        async function loadDirectMessageHistory(username, userNumber) {
+            try {
+                const { data: messages, error } = await supabaseClient
+                    .from('direct_messages')
+                    .select('*')
+                    .or(
+                        `and(sender_number.eq.${currentUser.user_number},receiver_number.eq.${userNumber}),` +
+                        `and(sender_number.eq.${userNumber},receiver_number.eq.${currentUser.user_number})`
+                    )
+                    .order('created_at', { ascending: true });
 
-// Adicionar listener para remover hover card quando clicar fora
-document.addEventListener('mouseover', (e) => {
-    const card = document.querySelector('.user-hover-card');
-    if (card && !e.target.closest('.user-hover-card') && !e.target.closest('.message strong')) {
-        removeUserHoverCard();
-    }
-});
+                if (error) throw error;
+
+                const messagesContainer = document.getElementById(`dm-messages-${username}`);
+                if (!messagesContainer) return;
+
+                messagesContainer.innerHTML = '';
+                
+                messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${msg.sender_number === currentUser.user_number ? 'sent' : 'received'}`;
+                    messageDiv.innerHTML = `
+                        ${msg.message}<br>
+                        <div class="timestamp">${new Date(msg.created_at).toLocaleTimeString()}</div>
+                    `;
+                    messagesContainer.appendChild(messageDiv);
+                });
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            } catch (error) {
+                console.error('Erro ao carregar mensagens:', error);
+            }
+        }
+
+        async function sendDirectMessage(username, userNumber) {
+            const inputElement = document.getElementById(`dm-input-${username}`);
+            const message = inputElement.value.trim();
+
+            if (!message) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('direct_messages')
+                    .insert([{
+                        sender_number: currentUser.user_number,
+                        receiver_number: userNumber,
+                        message: message
+                    }]);
+
+                if (error) throw error;
+
+                inputElement.value = '';
+                await loadDirectMessageHistory(username, userNumber);
+                
+                const dmWindow = activeDirectMessages.get(username);
+                if (dmWindow) {
+                    dmWindow.style.opacity = '1';
+                    inputElement.focus();
+                }
+            } catch (error) {
+                console.error('Erro ao enviar mensagem:', error);
+                alert('Erro ao enviar mensagem: ' + error.message);
+            }
+        }
+
+        // Funções auxiliares
+        function showLoading() {
+            document.getElementById('loadingModal').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').style.display = 'none';
+        }
+
+        function showLoginModal() {
+            document.getElementById('registerModal').style.display = 'none';
+            document.getElementById('loginModal').style.display = 'flex';
+            hideLoading();
+            document.getElementById('loginEmail').focus();
+        }
+
+        function showRegisterModal() {
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('registerModal').style.display = 'flex';
+            hideLoading();
+            document.getElementById('regEmail').focus();
+        }
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        async function verifyPassword(password, hash) {
+            return await hashPassword(password) === hash;
+        }
+
+        function generateToken() {
+            return Array.from(crypto.getRandomValues(new Uint8Array(32)))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        function saveLastOpenChat(username, userNumber) {
+            localStorage.setItem('lastOpenChat', JSON.stringify({ username, userNumber }));
+        }
+
+        async function loadLastOpenChat() {
+            const lastChat = localStorage.getItem('lastOpenChat');
+            if (lastChat) {
+                const { username, userNumber } = JSON.parse(lastChat);
+                await openDirectMessage(username, userNumber);
+            }
+        }
+
+        // Iniciar aplicação
+        checkSession();
+
+        // Event Listeners
+        document.addEventListener('mouseover', (e) => {
+            const card = document.querySelector('.user-hover-card');
+            if (card && !e.target.closest('.user-hover-card') && !e.target.closest('.message strong')) {
+                removeUserHoverCard();
+            }
+        });
     </script>
+</body>
+</html>
 </body>
 </html>
